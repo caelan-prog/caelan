@@ -1,0 +1,1904 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SQL Compilation (W3Schools-style) — Code Only</title>
+  <style>
+:root{
+  --bg:#f8f5ff;
+  --panel:#ffffff;
+  --panel2:#f3efff;
+  --text:#2d2a4a;
+  --muted:#6c6a8d;
+  --accent:#8a2be2;
+  --accent2:#9370db;
+  --border:#d9d2f0;
+  --shadow:0 12px 28px rgba(138, 43, 226, 0.12);
+  --code:#1e1b36;
+  --radius:14px;
+  --purple-light:#f3efff;
+  --purple-medium:#8a2be2;
+  --purple-dark:#5e17b3;
+  --gradient:linear-gradient(135deg, #8a2be2 0%, #9370db 100%);
+}
+
+[data-theme="dark"]{
+  --bg:#1a1525;
+  --panel:#261f3a;
+  --panel2:#2d2645;
+  --text:#f0eaff;
+  --muted:#a99fd0;
+  --border:#3d345d;
+  --shadow:0 12px 28px rgba(0,0,0,.55);
+  --code:#0f0c1c;
+  --gradient:linear-gradient(135deg, #8a2be2 0%, #5e17b3 100%);
+}
+
+/* Reset */
+*{box-sizing:border-box}
+html,body{height:100%}
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* App Layout */
+.app{
+  height:100%;
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:16px;
+  padding:16px;
+}
+
+/* Sidebar */
+.sidebar{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+/* Brand */
+.brand{
+  padding:16px;
+  border-bottom:1px solid var(--border);
+  background:var(--gradient);
+  color:white;
+  position:relative;
+  overflow:hidden;
+}
+
+.brand::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+}
+
+.brand .title{
+  position:relative;
+  z-index:1;
+}
+
+.brand h1{
+  margin:0;
+  font-size:14px;
+  font-weight:600;
+}
+
+.brand p{
+  margin:4px 0 0;
+  font-size:12px;
+  opacity:0.9;
+}
+
+/* Pill */
+.pill{
+  margin-top:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.2);
+  color:white;
+  backdrop-filter:blur(10px);
+  position:relative;
+  z-index:1;
+}
+
+.pill .dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#7cfc00;
+  box-shadow:0 0 8px #7cfc00;
+}
+
+/* Controls */
+.controls{
+  padding:12px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.search{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 10px;
+  transition:all 0.2s ease;
+}
+
+.search:focus-within{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(138, 43, 226, 0.1);
+}
+
+.search input{
+  border:none;
+  outline:none;
+  background:transparent;
+  width:100%;
+  font-size:12px;
+  color:var(--text);
+}
+
+.row{
+  display:flex;
+  gap:6px;
+}
+
+/* Buttons */
+.btn{
+  font-size:11px;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text);
+  cursor:pointer;
+  transition:all 0.2s ease;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:500;
+}
+
+.btn:hover{
+  background:var(--purple-light);
+  border-color:var(--accent);
+  transform:translateY(-1px);
+}
+
+.btn.accent{
+  background:var(--gradient);
+  border-color:var(--purple-medium);
+  color:white;
+}
+
+.btn.blue{
+  background:var(--gradient);
+  border-color:var(--purple-medium);
+  color:white;
+}
+
+/* Topic List */
+.list{
+  padding:8px 6px;
+  overflow:auto;
+  flex:1;
+}
+
+.item{
+  padding:10px 12px;
+  margin:4px 6px;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  transition:all 0.2s ease;
+  border:1px solid transparent;
+}
+
+.item:hover{
+  background:var(--purple-light);
+  border-color:var(--border);
+  transform:translateX(4px);
+}
+
+.item.active{
+  background:var(--gradient);
+  border-color:var(--purple-medium);
+  color:white;
+  box-shadow:0 4px 12px rgba(138, 43, 226, 0.2);
+}
+
+.item.active .badge{
+  background:rgba(255,255,255,0.3);
+  color:white;
+}
+
+.item .name{
+  font-size:12px;
+  font-weight:500;
+}
+
+.badge{
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:var(--purple-light);
+  color:var(--purple-dark);
+  font-weight:600;
+  letter-spacing:0.5px;
+}
+
+/* Main Panel */
+.main{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+/* Top Bar */
+.topbar{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:linear-gradient(135deg, var(--panel) 0%, var(--panel2) 100%);
+}
+
+.topbar h2{
+  margin:0;
+  font-size:15px;
+  font-weight:600;
+  background:var(--gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  display:inline-block;
+}
+
+.meta{
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+}
+
+/* Content */
+.content{
+  padding:16px;
+  overflow:auto;
+  flex:1;
+}
+
+/* Code Block */
+pre{
+  background:var(--code);
+  border-radius:12px;
+  padding:16px;
+  border:1px solid #3d345d;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,0.3);
+  overflow:auto;
+}
+
+code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:12.5px;
+  line-height:1.65;
+  color:#e5e7eb;
+}
+
+/* Syntax highlighting */
+.comment{color:#6c6a8d;}
+.keyword{color:#8a2be2;font-weight:bold;}
+.string{color:#9370db;}
+.function{color:#d6b3ff;}
+.number{color:#ba55d3;}
+
+/* Hint */
+.hint{
+  margin-top:12px;
+  font-size:11px;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.kbd{
+  background:var(--purple-light);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:2px 6px;
+  font-family:monospace;
+  font-size:10px;
+  color:var(--purple-dark);
+}
+
+/* Toast */
+.toast{
+  position:fixed;
+  bottom:18px;
+  right:18px;
+  background:var(--gradient);
+  border:1px solid var(--purple-medium);
+  color:white;
+  padding:10px 14px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  opacity:0;
+  transform:translateY(10px);
+  transition:all 0.3s ease;
+  z-index:1000;
+  backdrop-filter:blur(10px);
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{
+  width:8px;
+  height:8px;
+}
+
+::-webkit-scrollbar-track{
+  background:var(--panel2);
+  border-radius:4px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:var(--purple-medium);
+  border-radius:4px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:var(--purple-dark);
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{height:45vh;}
+  .main{height:calc(55vh - 16px);}
+}
+
+/* Group headers */
+.list > div:not(.item){
+  background:var(--panel2);
+  margin:8px 6px 4px;
+  border-radius:8px;
+  padding:8px 12px;
+  border-left:3px solid var(--accent);
+}
+
+/* Icons */
+.btn span:first-child{
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="title">
+          <h1>SQL Compilation — Villalba, Dandreb P.</h1>
+          <p>SQL Intro → All SQL Database</p>
+        </div>
+        <div class="pill" title="Ready">
+          <span class="dot"></span>
+          <span>Ready</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="search" title="Search topics">
+          <span style="color:var(--accent)">🔍</span>
+          <input id="search" placeholder="Search topic (e.g., Join, Create Table)..." />
+        </div>
+        <div class="row">
+          <button class="btn small ghost" id="expandAll" title="Show one combined script">
+            <span>🔗</span>
+            <span>Combined</span>
+          </button>
+          <button class="btn small ghost" id="jumpDb" title="Jump to SQL Database section">
+            <span>⚙️</span>
+            <span>Database</span>
+          </button>
+          <button class="btn small ghost" id="toggleTheme" title="Toggle theme">
+            <span>🌓</span>
+            <span>Theme</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="list" id="topicList"></div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="left">
+          <h2 id="topicTitle">Loading…</h2>
+          <div class="meta">
+            <span id="topicIndex">—</span>
+            <span class="badge" id="topicTag">SQL</span>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn blue" id="copyBtn" title="Copy code (Ctrl/Cmd + K)">
+            <span>📋</span>
+            <span>Copy</span>
+          </button>
+          <button class="btn accent" id="downloadBtn" title="Download current code as .sql">
+            <span>⬇️</span>
+            <span>Download</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <pre><code id="codeBlock"></code></pre>
+        <div class="hint">
+          <span>Tips:</span>
+          <span class="kbd">Ctrl/Cmd + K</span><span>copy</span>
+          <span class="kbd">Ctrl/Cmd + /</span><span>focus search</span>
+          <span class="kbd">↑ / ↓</span><span>navigate topics</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <script>
+    // ===============================
+    // SQL Compilation (Code Only)
+    // Topics: SQL Intro → SQL Database
+    // ===============================
+
+    const TOPICS = [
+      // ---------- Intro ----------
+      {
+        group: "SQL Basics",
+        title: "SQL Intro",
+        tag: "Intro",
+        code: `-- SQL INTRO (Code-only compilation)
+-- SQL = Structured Query Language
+-- Used to store, retrieve, and manipulate data in relational databases.
+
+-- Example: pick the current database (varies by DB)
+-- MySQL:
+SELECT DATABASE();
+
+-- Example: view server version (varies)
+-- MySQL:
+SELECT VERSION();`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Syntax",
+        tag: "Basics",
+        code: `-- SQL SYNTAX (General patterns)
+
+-- 1) SELECT columns FROM table
+SELECT * FROM Customers;
+
+-- 2) SELECT with WHERE
+SELECT CustomerName, City
+FROM Customers
+WHERE Country = 'USA';
+
+-- 3) INSERT
+INSERT INTO Customers (CustomerName, ContactName, Country)
+VALUES ('Acme Inc', 'J. Smith', 'USA');
+
+-- 4) UPDATE
+UPDATE Customers
+SET City = 'Boston'
+WHERE CustomerID = 1;
+
+-- 5) DELETE
+DELETE FROM Customers
+WHERE CustomerID = 1;`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Select",
+        tag: "Query",
+        code: `-- SQL SELECT
+
+-- Select all columns
+SELECT * FROM Customers;
+
+-- Select specific columns
+SELECT CustomerName, Country
+FROM Customers;
+
+-- Select with simple expression
+SELECT CustomerName, (CreditLimit - Balance) AS AvailableCredit
+FROM Customers;`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Select Distinct",
+        tag: "Query",
+        code: `-- SQL SELECT DISTINCT
+
+-- Unique countries
+SELECT DISTINCT Country
+FROM Customers;
+
+-- Unique combinations (Country + City)
+SELECT DISTINCT Country, City
+FROM Customers;`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Where",
+        tag: "Filter",
+        code: `-- SQL WHERE
+
+-- Equality
+SELECT * FROM Customers
+WHERE Country = 'Germany';
+
+-- Numeric comparisons
+SELECT * FROM Orders
+WHERE TotalAmount >= 100;
+
+-- Date comparisons (MySQL)
+SELECT * FROM Orders
+WHERE OrderDate >= '2025-01-01';`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Order By",
+        tag: "Sort",
+        code: `-- SQL ORDER BY
+
+-- Ascending (default)
+SELECT * FROM Customers
+ORDER BY CustomerName;
+
+-- Descending
+SELECT * FROM Customers
+ORDER BY CustomerName DESC;
+
+-- Multiple columns
+SELECT * FROM Customers
+ORDER BY Country ASC, City ASC;`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL And",
+        tag: "Logic",
+        code: `-- SQL AND
+
+SELECT * FROM Customers
+WHERE Country = 'USA'
+  AND City = 'Seattle';
+
+SELECT * FROM Orders
+WHERE TotalAmount > 100
+  AND Status = 'PAID';`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Or",
+        tag: "Logic",
+        code: `-- SQL OR
+
+SELECT * FROM Customers
+WHERE City = 'Berlin'
+   OR City = 'Munich';
+
+SELECT * FROM Orders
+WHERE Status = 'PENDING'
+   OR Status = 'FAILED';`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Not",
+        tag: "Logic",
+        code: `-- SQL NOT
+
+SELECT * FROM Customers
+WHERE NOT Country = 'USA';
+
+SELECT * FROM Orders
+WHERE NOT Status = 'CANCELLED';`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Insert Into",
+        tag: "DML",
+        code: `-- SQL INSERT INTO
+
+-- Insert one row
+INSERT INTO Customers (CustomerName, ContactName, Country, City)
+VALUES ('Globex', 'Hank Scorpio', 'USA', 'Springfield');
+
+-- Insert multiple rows
+INSERT INTO Customers (CustomerName, ContactName, Country, City)
+VALUES
+  ('Initech', 'Peter Gibbons', 'USA', 'Austin'),
+  ('Vandelay Industries', 'Art Vandelay', 'USA', 'New York');`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Null Values",
+        tag: "Null",
+        code: `-- SQL NULL VALUES
+
+-- Find rows with NULL
+SELECT * FROM Customers
+WHERE ContactName IS NULL;
+
+-- Find rows NOT NULL
+SELECT * FROM Customers
+WHERE ContactName IS NOT NULL;
+
+-- Avoid NULL pitfalls (example)
+-- This returns nothing if ContactName is NULL because NULL != 'x' is UNKNOWN
+SELECT * FROM Customers
+WHERE ContactName <> 'Alice';`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Update",
+        tag: "DML",
+        code: `-- SQL UPDATE
+
+-- Update single column
+UPDATE Customers
+SET City = 'Oslo'
+WHERE CustomerID = 10;
+
+-- Update multiple columns
+UPDATE Customers
+SET City = 'Copenhagen',
+    Country = 'Denmark'
+WHERE CustomerID = 11;
+
+-- Update many rows (be careful)
+UPDATE Orders
+SET Status = 'ARCHIVED'
+WHERE OrderDate < '2023-01-01';`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Delete",
+        tag: "DML",
+        code: `-- SQL DELETE
+
+-- Delete specific rows
+DELETE FROM Customers
+WHERE CustomerID = 42;
+
+-- Delete all rows (keeps table)
+DELETE FROM Orders;
+
+-- Truncate (faster, resets auto increment in many DBs)
+-- MySQL:
+TRUNCATE TABLE Orders;`
+      },
+      {
+        group: "SQL Basics",
+        title: "SQL Select Top",
+        tag: "Query",
+        code: `-- SQL SELECT TOP / LIMIT / FETCH
+
+-- MySQL: LIMIT
+SELECT * FROM Customers
+ORDER BY CustomerID
+LIMIT 5;
+
+-- SQL Server: TOP
+-- SELECT TOP 5 * FROM Customers ORDER BY CustomerID;
+
+-- Postgres/Standard: FETCH FIRST
+-- SELECT * FROM Customers ORDER BY CustomerID FETCH FIRST 5 ROWS ONLY;`
+      },
+
+      // ---------- Aggregates ----------
+      {
+        group: "SQL Functions",
+        title: "SQL Aggregate Functions",
+        tag: "Agg",
+        code: `-- SQL AGGREGATE FUNCTIONS (COUNT, SUM, AVG, MIN, MAX)
+
+-- Total orders
+SELECT COUNT(*) AS TotalOrders
+FROM Orders;
+
+-- Total revenue
+SELECT SUM(TotalAmount) AS Revenue
+FROM Orders
+WHERE Status = 'PAID';
+
+-- Average order value
+SELECT AVG(TotalAmount) AS AvgOrderValue
+FROM Orders
+WHERE Status = 'PAID';
+
+-- Min/Max order totals
+SELECT MIN(TotalAmount) AS Smallest,
+       MAX(TotalAmount) AS Largest
+FROM Orders;`
+      },
+      {
+        group: "SQL Functions",
+        title: "SQL Min and Max",
+        tag: "Agg",
+        code: `-- SQL MIN and MAX
+
+SELECT MIN(TotalAmount) AS MinTotal
+FROM Orders;
+
+SELECT MAX(TotalAmount) AS MaxTotal
+FROM Orders;
+
+-- Max per customer
+SELECT CustomerID, MAX(TotalAmount) AS BiggestOrder
+FROM Orders
+GROUP BY CustomerID;`
+      },
+      {
+        group: "SQL Functions",
+        title: "SQL Count",
+        tag: "Agg",
+        code: `-- SQL COUNT
+
+-- Count rows
+SELECT COUNT(*) AS RowCount
+FROM Customers;
+
+-- Count non-NULL values
+SELECT COUNT(ContactName) AS ContactCount
+FROM Customers;
+
+-- Count distinct values
+SELECT COUNT(DISTINCT Country) AS UniqueCountries
+FROM Customers;`
+      },
+      {
+        group: "SQL Functions",
+        title: "SQL Sum",
+        tag: "Agg",
+        code: `-- SQL SUM
+
+-- Total paid revenue
+SELECT SUM(TotalAmount) AS PaidRevenue
+FROM Orders
+WHERE Status = 'PAID';
+
+-- Revenue per month (MySQL)
+SELECT DATE_FORMAT(OrderDate, '%Y-%m') AS Month,
+       SUM(TotalAmount) AS Revenue
+FROM Orders
+WHERE Status = 'PAID'
+GROUP BY DATE_FORMAT(OrderDate, '%Y-%m')
+ORDER BY Month;`
+      },
+      {
+        group: "SQL Functions",
+        title: "SQL Avg",
+        tag: "Agg",
+        code: `-- SQL AVG
+
+SELECT AVG(TotalAmount) AS AvgTotal
+FROM Orders;
+
+-- Avg per customer
+SELECT CustomerID, AVG(TotalAmount) AS AvgPerCustomer
+FROM Orders
+GROUP BY CustomerID
+ORDER BY AvgPerCustomer DESC;`
+      },
+
+      // ---------- Filtering patterns ----------
+      {
+        group: "SQL Filtering",
+        title: "SQL Like",
+        tag: "Filter",
+        code: `-- SQL LIKE
+
+-- Starts with 'A'
+SELECT * FROM Customers
+WHERE CustomerName LIKE 'A%';
+
+-- Contains 'market'
+SELECT * FROM Customers
+WHERE CustomerName LIKE '%market%';
+
+-- Ends with 'Ltd'
+SELECT * FROM Customers
+WHERE CustomerName LIKE '%Ltd';`
+      },
+      {
+        group: "SQL Filtering",
+        title: "SQL Wildcards",
+        tag: "Filter",
+        code: `-- SQL WILDCARDS (common in LIKE)
+-- %  = any number of characters
+-- _  = single character
+
+-- Exactly 5 letters (e.g., 'Alice' matches)
+SELECT * FROM Customers
+WHERE CustomerName LIKE '_____';
+
+-- 'Jo' + any single char + 'n' (e.g., 'John', 'Joan')
+SELECT * FROM Employees
+WHERE FirstName LIKE 'Jo_n';
+
+-- Two-letter country code (example)
+SELECT * FROM Customers
+WHERE CountryCode LIKE '__';`
+      },
+      {
+        group: "SQL Filtering",
+        title: "SQL In",
+        tag: "Filter",
+        code: `-- SQL IN
+
+SELECT * FROM Customers
+WHERE Country IN ('USA', 'Canada', 'Mexico');
+
+-- IN with subquery
+SELECT * FROM Orders
+WHERE CustomerID IN (
+  SELECT CustomerID
+  FROM Customers
+  WHERE Country = 'USA'
+);`
+      },
+      {
+        group: "SQL Filtering",
+        title: "SQL Between",
+        tag: "Filter",
+        code: `-- SQL BETWEEN
+
+-- Numeric range (inclusive)
+SELECT * FROM Orders
+WHERE TotalAmount BETWEEN 50 AND 200;
+
+-- Date range (inclusive)
+SELECT * FROM Orders
+WHERE OrderDate BETWEEN '2025-01-01' AND '2025-01-31';
+
+-- Text range (depends on collation)
+SELECT * FROM Customers
+WHERE CustomerName BETWEEN 'A' AND 'M';`
+      },
+      {
+        group: "SQL Filtering",
+        title: "SQL Aliases",
+        tag: "Query",
+        code: `-- SQL ALIASES (AS)
+
+-- Column alias
+SELECT CustomerName AS Name, Country AS Nation
+FROM Customers;
+
+-- Table alias
+SELECT c.CustomerName, o.OrderID, o.TotalAmount
+FROM Customers AS c
+JOIN Orders AS o ON o.CustomerID = c.CustomerID;
+
+-- Alias with spaces (use quotes/backticks depending on DB)
+-- MySQL:
+SELECT TotalAmount AS \`Order Total\`
+FROM Orders;`
+      },
+
+      // ---------- Joins ----------
+      {
+        group: "SQL Joins",
+        title: "SQL Joins",
+        tag: "Join",
+        code: `-- SQL JOINS (Overview)
+-- INNER JOIN: only matching rows
+-- LEFT JOIN : all left + matches from right
+-- RIGHT JOIN: all right + matches from left (not in all DBs)
+-- FULL JOIN : all from both sides (not in MySQL without UNION)
+-- SELF JOIN : table joined with itself
+
+-- Example schema assumption:
+-- Customers(CustomerID, CustomerName)
+-- Orders(OrderID, CustomerID, OrderDate, TotalAmount)
+
+-- Typical INNER JOIN
+SELECT c.CustomerName, o.OrderID, o.TotalAmount
+FROM Customers c
+INNER JOIN Orders o ON o.CustomerID = c.CustomerID;`
+      },
+      {
+        group: "SQL Joins",
+        title: "SQL Inner Join",
+        tag: "Join",
+        code: `-- SQL INNER JOIN
+
+SELECT c.CustomerID, c.CustomerName, o.OrderID, o.OrderDate
+FROM Customers c
+INNER JOIN Orders o
+  ON c.CustomerID = o.CustomerID
+ORDER BY o.OrderDate DESC;`
+      },
+      {
+        group: "SQL Joins",
+        title: "SQL Left Join",
+        tag: "Join",
+        code: `-- SQL LEFT JOIN
+
+-- Customers with or without orders
+SELECT c.CustomerID, c.CustomerName, o.OrderID
+FROM Customers c
+LEFT JOIN Orders o
+  ON c.CustomerID = o.CustomerID
+ORDER BY c.CustomerID;`
+      },
+      {
+        group: "SQL Joins",
+        title: "SQL Right Join",
+        tag: "Join",
+        code: `-- SQL RIGHT JOIN (Not supported in some DBs; MySQL supports RIGHT JOIN)
+
+-- Orders with customer info (if any)
+SELECT c.CustomerName, o.OrderID, o.TotalAmount
+FROM Customers c
+RIGHT JOIN Orders o
+  ON c.CustomerID = o.CustomerID;`
+      },
+      {
+        group: "SQL Joins",
+        title: "SQL Full Join",
+        tag: "Join",
+        code: `-- SQL FULL JOIN
+-- MySQL doesn't support FULL OUTER JOIN directly.
+-- Workaround: UNION of LEFT JOIN and RIGHT JOIN.
+
+SELECT c.CustomerID, c.CustomerName, o.OrderID
+FROM Customers c
+LEFT JOIN Orders o ON o.CustomerID = c.CustomerID
+
+UNION
+
+SELECT c.CustomerID, c.CustomerName, o.OrderID
+FROM Customers c
+RIGHT JOIN Orders o ON o.CustomerID = c.CustomerID;`
+      },
+      {
+        group: "SQL Joins",
+        title: "SQL Self Join",
+        tag: "Join",
+        code: `-- SQL SELF JOIN
+-- Example: Employees with managers
+-- Employees(EmployeeID, FirstName, ManagerID)
+
+SELECT e.EmployeeID,
+       e.FirstName AS Employee,
+       m.FirstName AS Manager
+FROM Employees e
+LEFT JOIN Employees m
+  ON e.ManagerID = m.EmployeeID;`
+      },
+
+      // ---------- Set ops + grouping ----------
+      {
+        group: "SQL Advanced",
+        title: "SQL Union",
+        tag: "Set",
+        code: `-- SQL UNION (removes duplicates)
+
+SELECT City FROM Customers
+UNION
+SELECT City FROM Suppliers
+ORDER BY City;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Union All",
+        tag: "Set",
+        code: `-- SQL UNION ALL (keeps duplicates)
+
+SELECT City FROM Customers
+UNION ALL
+SELECT City FROM Suppliers
+ORDER BY City;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Group By",
+        tag: "Group",
+        code: `-- SQL GROUP BY
+
+-- Orders per customer
+SELECT CustomerID, COUNT(*) AS OrdersCount
+FROM Orders
+GROUP BY CustomerID
+ORDER BY OrdersCount DESC;
+
+-- Revenue per country (Customers join Orders)
+SELECT c.Country, SUM(o.TotalAmount) AS Revenue
+FROM Customers c
+JOIN Orders o ON o.CustomerID = c.CustomerID
+WHERE o.Status = 'PAID'
+GROUP BY c.Country
+ORDER BY Revenue DESC;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Having",
+        tag: "Group",
+        code: `-- SQL HAVING (filters AFTER grouping)
+
+-- Customers with 5+ orders
+SELECT CustomerID, COUNT(*) AS OrdersCount
+FROM Orders
+GROUP BY CustomerID
+HAVING COUNT(*) >= 5
+ORDER BY OrdersCount DESC;
+
+-- Countries with revenue > 1000
+SELECT c.Country, SUM(o.TotalAmount) AS Revenue
+FROM Customers c
+JOIN Orders o ON o.CustomerID = c.CustomerID
+WHERE o.Status = 'PAID'
+GROUP BY c.Country
+HAVING SUM(o.TotalAmount) > 1000
+ORDER BY Revenue DESC;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Exists",
+        tag: "Subquery",
+        code: `-- SQL EXISTS
+
+-- Customers who have at least one order
+SELECT c.CustomerID, c.CustomerName
+FROM Customers c
+WHERE EXISTS (
+  SELECT 1
+  FROM Orders o
+  WHERE o.CustomerID = c.CustomerID
+);`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Any, All",
+        tag: "Subquery",
+        code: `-- SQL ANY / ALL
+
+-- ANY: true if comparison is true for at least one subquery value
+-- Find orders greater than ANY order from customer 1 (usually means greater than MIN of that set)
+SELECT *
+FROM Orders
+WHERE TotalAmount > ANY (
+  SELECT TotalAmount
+  FROM Orders
+  WHERE CustomerID = 1
+);
+
+-- ALL: true if comparison is true for all subquery values
+-- Find orders greater than ALL orders from customer 1 (greater than MAX of that set)
+SELECT *
+FROM Orders
+WHERE TotalAmount > ALL (
+  SELECT TotalAmount
+  FROM Orders
+  WHERE CustomerID = 1
+);`
+      },
+
+      // ---------- Select Into / Insert Into Select ----------
+      {
+        group: "SQL Advanced",
+        title: "SQL Select Into",
+        tag: "DML",
+        code: `-- SQL SELECT INTO
+-- Creates a new table from a SELECT (syntax varies by DB)
+
+-- SQL Server style:
+-- SELECT * INTO CustomersBackup FROM Customers;
+
+-- MySQL workaround: CREATE TABLE ... AS SELECT
+CREATE TABLE CustomersBackup AS
+SELECT * FROM Customers;
+
+-- Copy only some columns/rows
+CREATE TABLE UsCustomers AS
+SELECT CustomerID, CustomerName, City, Country
+FROM Customers
+WHERE Country = 'USA';`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Insert Into Select",
+        tag: "DML",
+        code: `-- SQL INSERT INTO SELECT
+
+-- Copy rows into an existing table
+INSERT INTO CustomersBackup (CustomerID, CustomerName, City, Country)
+SELECT CustomerID, CustomerName, City, Country
+FROM Customers
+WHERE Country IN ('USA', 'Canada');`
+      },
+
+      // ---------- Case / Null functions / Stored procedures / Comments / Operators ----------
+      {
+        group: "SQL Advanced",
+        title: "SQL Case",
+        tag: "Logic",
+        code: `-- SQL CASE
+
+SELECT OrderID,
+       TotalAmount,
+       CASE
+         WHEN TotalAmount >= 500 THEN 'VIP'
+         WHEN TotalAmount >= 200 THEN 'PRIORITY'
+         ELSE 'STANDARD'
+       END AS OrderTier
+FROM Orders
+ORDER BY TotalAmount DESC;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Null Functions",
+        tag: "Null",
+        code: `-- SQL NULL FUNCTIONS
+-- COALESCE is standard (returns first non-NULL)
+-- IFNULL is MySQL-specific (returns alt if NULL)
+
+SELECT CustomerName,
+       COALESCE(ContactName, 'N/A') AS ContactNameSafe
+FROM Customers;
+
+-- MySQL:
+SELECT CustomerName,
+       IFNULL(ContactName, 'N/A') AS ContactNameSafe
+FROM Customers;
+
+-- Replace NULL numeric with 0 to avoid NULL results
+SELECT OrderID,
+       COALESCE(Discount, 0) AS DiscountSafe,
+       TotalAmount - COALESCE(Discount, 0) AS NetTotal
+FROM Orders;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Stored Procedures",
+        tag: "SP",
+        code: `-- SQL STORED PROCEDURES (Example: MySQL)
+
+-- Create a procedure
+DELIMITER //
+CREATE PROCEDURE GetCustomerOrders(IN pCustomerID INT)
+BEGIN
+  SELECT o.OrderID, o.OrderDate, o.TotalAmount, o.Status
+  FROM Orders o
+  WHERE o.CustomerID = pCustomerID
+  ORDER BY o.OrderDate DESC;
+END //
+DELIMITER ;
+
+-- Call the procedure
+CALL GetCustomerOrders(1);
+
+-- Drop the procedure
+DROP PROCEDURE IF EXISTS GetCustomerOrders;`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Comments",
+        tag: "Basics",
+        code: `-- SQL COMMENTS
+
+-- Single-line comment (MySQL, Postgres, SQL Server)
+SELECT * FROM Customers; -- trailing comment
+
+/* Multi-line comment
+   Useful for blocks
+*/
+SELECT CustomerID, CustomerName
+FROM Customers
+WHERE Country = 'USA';`
+      },
+      {
+        group: "SQL Advanced",
+        title: "SQL Operators",
+        tag: "Basics",
+        code: `-- SQL OPERATORS (Common)
+
+-- Arithmetic: + - * /
+SELECT 10 + 5 AS Add,
+       10 - 5 AS Sub,
+       10 * 5 AS Mul,
+       10 / 5 AS Div;
+
+-- Comparison: = <> != > < >= <=
+SELECT * FROM Orders
+WHERE TotalAmount <> 0;
+
+-- Logical: AND OR NOT
+SELECT * FROM Orders
+WHERE Status = 'PAID' AND TotalAmount > 100;
+
+-- IN / BETWEEN
+SELECT * FROM Customers
+WHERE Country IN ('USA','Canada');
+
+SELECT * FROM Orders
+WHERE TotalAmount BETWEEN 50 AND 200;
+
+-- LIKE
+SELECT * FROM Customers
+WHERE CustomerName LIKE 'A%';`
+      },
+
+      // =========================================================
+      // SQL DATABASE SECTION
+      // =========================================================
+      {
+        group: "SQL Database",
+        title: "SQL Create DB",
+        tag: "Database",
+        code: `-- SQL CREATE DATABASE
+
+-- Create a database
+CREATE DATABASE MyShop;
+
+-- Use it (MySQL)
+USE MyShop;
+
+-- Create with charset/collation (MySQL)
+CREATE DATABASE MyShop2
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Drop DB",
+        tag: "Database",
+        code: `-- SQL DROP DATABASE
+
+-- Drop a database (be careful)
+DROP DATABASE MyShop;
+
+-- Safer
+DROP DATABASE IF EXISTS MyShop;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Backup DB",
+        tag: "Database",
+        code: `-- SQL BACKUP DATABASE (varies by DB)
+-- Note: Many backups are done via CLI tools, not pure SQL.
+
+-- SQL Server example:
+-- BACKUP DATABASE MyShop TO DISK = 'C:\\backup\\MyShop.bak';
+
+-- MySQL common approach (CLI):
+-- mysqldump -u user -p MyShop > MyShop.sql
+
+-- Postgres common approach (CLI):
+-- pg_dump MyShop > MyShop.sql`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Create Table",
+        tag: "DDL",
+        code: `-- SQL CREATE TABLE
+
+CREATE TABLE Customers (
+  CustomerID INT AUTO_INCREMENT PRIMARY KEY,
+  CustomerName VARCHAR(255) NOT NULL,
+  ContactName VARCHAR(255),
+  Country VARCHAR(100) NOT NULL,
+  City VARCHAR(100),
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Orders (
+  OrderID INT AUTO_INCREMENT PRIMARY KEY,
+  CustomerID INT NOT NULL,
+  OrderDate DATE NOT NULL,
+  Status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  TotalAmount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  Discount DECIMAL(10,2),
+  CONSTRAINT FK_Orders_Customers
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Drop Table",
+        tag: "DDL",
+        code: `-- SQL DROP TABLE
+
+DROP TABLE Orders;
+
+DROP TABLE IF EXISTS Orders;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Alter Table",
+        tag: "DDL",
+        code: `-- SQL ALTER TABLE
+
+-- Add a column
+ALTER TABLE Customers
+ADD Email VARCHAR(255);
+
+-- Modify a column (MySQL)
+ALTER TABLE Customers
+MODIFY Email VARCHAR(320);
+
+-- Rename a column (MySQL 8+)
+ALTER TABLE Customers
+RENAME COLUMN CustomerName TO Name;
+
+-- Drop a column
+ALTER TABLE Customers
+DROP COLUMN Email;`
+      },
+
+      // ---------- Constraints ----------
+      {
+        group: "SQL Database",
+        title: "SQL Constraints",
+        tag: "DDL",
+        code: `-- SQL CONSTRAINTS (Overview)
+-- Common constraints:
+-- NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, DEFAULT
+
+-- Example in CREATE TABLE
+CREATE TABLE Products (
+  ProductID INT AUTO_INCREMENT,
+  ProductName VARCHAR(255) NOT NULL,
+  SKU VARCHAR(64) UNIQUE,
+  Price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  Stock INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (ProductID),
+  CHECK (Price >= 0),
+  CHECK (Stock >= 0)
+);`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Not Null",
+        tag: "DDL",
+        code: `-- SQL NOT NULL
+
+CREATE TABLE Categories (
+  CategoryID INT AUTO_INCREMENT PRIMARY KEY,
+  CategoryName VARCHAR(255) NOT NULL
+);
+
+-- Add NOT NULL to existing column (MySQL)
+ALTER TABLE Categories
+MODIFY CategoryName VARCHAR(255) NOT NULL;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Unique",
+        tag: "DDL",
+        code: `-- SQL UNIQUE
+
+-- In CREATE TABLE
+CREATE TABLE Users (
+  UserID INT AUTO_INCREMENT PRIMARY KEY,
+  Email VARCHAR(255) NOT NULL,
+  CONSTRAINT UQ_Users_Email UNIQUE (Email)
+);
+
+-- Add UNIQUE after create (MySQL)
+ALTER TABLE Users
+ADD CONSTRAINT UQ_Users_Email2 UNIQUE (Email);`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Primary Key",
+        tag: "DDL",
+        code: `-- SQL PRIMARY KEY
+
+-- Single-column PK
+CREATE TABLE Departments (
+  DepartmentID INT PRIMARY KEY,
+  DepartmentName VARCHAR(255) NOT NULL
+);
+
+-- Composite PK
+CREATE TABLE Enrollment (
+  StudentID INT NOT NULL,
+  CourseID INT NOT NULL,
+  EnrolledAt DATE NOT NULL,
+  PRIMARY KEY (StudentID, CourseID)
+);`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Foreign Key",
+        tag: "DDL",
+        code: `-- SQL FOREIGN KEY
+
+CREATE TABLE Customers2 (
+  CustomerID INT AUTO_INCREMENT PRIMARY KEY,
+  CustomerName VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Orders2 (
+  OrderID INT AUTO_INCREMENT PRIMARY KEY,
+  CustomerID INT NOT NULL,
+  OrderDate DATE NOT NULL,
+  CONSTRAINT FK_Orders2_Customers2
+    FOREIGN KEY (CustomerID) REFERENCES Customers2(CustomerID)
+);
+
+-- Add FK after create
+ALTER TABLE Orders2
+ADD CONSTRAINT FK_Orders2_Customers2_B
+FOREIGN KEY (CustomerID) REFERENCES Customers2(CustomerID);`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Check",
+        tag: "DDL",
+        code: `-- SQL CHECK
+
+CREATE TABLE Payments (
+  PaymentID INT AUTO_INCREMENT PRIMARY KEY,
+  Amount DECIMAL(10,2) NOT NULL,
+  Method VARCHAR(20) NOT NULL,
+  CHECK (Amount >= 0),
+  CHECK (Method IN ('CASH','CARD','BANK'))
+);`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Default",
+        tag: "DDL",
+        code: `-- SQL DEFAULT
+
+CREATE TABLE Tickets (
+  TicketID INT AUTO_INCREMENT PRIMARY KEY,
+  Title VARCHAR(255) NOT NULL,
+  Status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add DEFAULT (MySQL)
+ALTER TABLE Tickets
+MODIFY Status VARCHAR(20) NOT NULL DEFAULT 'OPEN';`
+      },
+
+      // ---------- Index / Auto Increment / Dates / Views / Injection / Data Types ----------
+      {
+        group: "SQL Database",
+        title: "SQL Index",
+        tag: "Performance",
+        code: `-- SQL INDEX
+
+-- Create index
+CREATE INDEX IDX_Customers_Country
+ON Customers (Country);
+
+-- Composite index
+CREATE INDEX IDX_Orders_Customer_Date
+ON Orders (CustomerID, OrderDate);
+
+-- Drop index (MySQL)
+DROP INDEX IDX_Customers_Country ON Customers;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Auto Increment",
+        tag: "DDL",
+        code: `-- SQL AUTO INCREMENT (MySQL)
+
+CREATE TABLE Logs (
+  LogID INT AUTO_INCREMENT PRIMARY KEY,
+  Message VARCHAR(500) NOT NULL,
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Set starting value
+ALTER TABLE Logs AUTO_INCREMENT = 1000;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Dates",
+        tag: "Date/Time",
+        code: `-- SQL DATES (MySQL examples)
+
+-- Current date/time
+SELECT CURDATE() AS Today, NOW() AS CurrentDateTime;
+
+-- Filter by date
+SELECT * FROM Orders
+WHERE OrderDate = '2025-01-15';
+
+-- Between dates
+SELECT * FROM Orders
+WHERE OrderDate BETWEEN '2025-01-01' AND '2025-01-31';
+
+-- Extract year/month
+SELECT OrderID,
+       YEAR(OrderDate) AS OrderYear,
+       MONTH(OrderDate) AS OrderMonth
+FROM Orders;
+
+-- Add/subtract dates
+SELECT DATE_ADD('2025-01-01', INTERVAL 30 DAY) AS Plus30Days;
+SELECT DATE_SUB('2025-01-01', INTERVAL 7 DAY) AS Minus7Days;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Views",
+        tag: "View",
+        code: `-- SQL VIEWS
+
+-- Create a view
+CREATE VIEW V_PaidOrders AS
+SELECT o.OrderID, o.CustomerID, o.OrderDate, o.TotalAmount
+FROM Orders o
+WHERE o.Status = 'PAID';
+
+-- Query the view
+SELECT * FROM V_PaidOrders
+ORDER BY OrderDate DESC;
+
+-- Replace a view (MySQL)
+CREATE OR REPLACE VIEW V_PaidOrders AS
+SELECT OrderID, CustomerID, OrderDate, TotalAmount
+FROM Orders
+WHERE Status = 'PAID' AND TotalAmount > 0;
+
+-- Drop a view
+DROP VIEW IF EXISTS V_PaidOrders;`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Injection",
+        tag: "Security",
+        code: `-- SQL INJECTION (Demonstration + Prevention Notes)
+-- WARNING: Do NOT build SQL by concatenating untrusted input.
+
+-- Bad (pseudo):
+-- "SELECT * FROM Users WHERE Email = '" + userInput + "' AND Password = '" + passInput + "'"
+
+-- Good practice:
+-- Use parameterized queries / prepared statements in your application code.
+-- Example (pseudo):
+-- PREPARE stmt FROM 'SELECT * FROM Users WHERE Email = ? AND PasswordHash = ?';
+-- EXECUTE stmt USING @email, @hash;
+
+-- Database-side guardrails:
+-- 1) Least privilege (app user should not be admin)
+-- 2) Avoid dynamic SQL when possible
+-- 3) Validate input types/lengths in app code`
+      },
+      {
+        group: "SQL Database",
+        title: "SQL Data Types",
+        tag: "DDL",
+        code: `-- SQL DATA TYPES (Common MySQL types)
+
+-- Numeric:
+-- INT, BIGINT, DECIMAL(p,s), FLOAT, DOUBLE
+
+-- String:
+-- CHAR(n), VARCHAR(n), TEXT
+
+-- Date/Time:
+-- DATE, TIME, DATETIME, TIMESTAMP
+
+-- Boolean:
+-- BOOLEAN (alias of TINYINT(1) in MySQL)
+
+-- Example table using mixed types
+CREATE TABLE DataTypeDemo (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  SmallNumber INT,
+  BigNumber BIGINT,
+  Money DECIMAL(10,2),
+  Ratio DOUBLE,
+  Flag BOOLEAN,
+  Code CHAR(5),
+  Name VARCHAR(100),
+  Notes TEXT,
+  BirthDate DATE,
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);`
+      }
+    ];
+
+    // -------------------------------
+    // UI logic
+    // -------------------------------
+    const els = {
+      list: document.getElementById("topicList"),
+      code: document.getElementById("codeBlock"),
+      title: document.getElementById("topicTitle"),
+      index: document.getElementById("topicIndex"),
+      tag: document.getElementById("topicTag"),
+      search: document.getElementById("search"),
+      copy: document.getElementById("copyBtn"),
+      download: document.getElementById("downloadBtn"),
+      toast: document.getElementById("toast"),
+      expandAll: document.getElementById("expandAll"),
+      jumpDb: document.getElementById("jumpDb"),
+      toggleTheme: document.getElementById("toggleTheme"),
+      app: document.getElementById("app")
+    };
+
+    let filtered = [...TOPICS];
+    let activeIndex = 0;
+    let combinedMode = false;
+
+    function groupCounts(arr){
+      const m = new Map();
+      for(const t of arr) m.set(t.group, (m.get(t.group)||0)+1);
+      return m;
+    }
+
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, ch => (
+        ch === "&" ? "&amp;" :
+        ch === "<" ? "&lt;" :
+        ch === ">" ? "&gt;" :
+        ch === "\"" ? "&quot;" : "&#039;"
+      ));
+    }
+
+    function renderList(){
+      els.list.innerHTML = "";
+      const counts = groupCounts(filtered);
+
+      let lastGroup = null;
+      filtered.forEach((t, i) => {
+        if(lastGroup !== t.group){
+          const header = document.createElement("div");
+          header.style.padding = "10px 14px 6px 14px";
+          header.style.color = "var(--muted)";
+          header.style.fontSize = "12px";
+          header.style.display = "flex";
+          header.style.justifyContent = "space-between";
+          header.style.alignItems = "center";
+          header.innerHTML = `<span>${escapeHtml(t.group)}</span><span class="badge">${counts.get(t.group)} topics</span>`;
+          els.list.appendChild(header);
+          lastGroup = t.group;
+        }
+
+        const item = document.createElement("div");
+        item.className = "item" + (i === activeIndex && !combinedMode ? " active" : "");
+        item.innerHTML = `
+          <div class="name">${escapeHtml(t.title)}</div>
+          <div class="badge">${escapeHtml(t.tag)}</div>
+        `;
+        item.addEventListener("click", () => {
+          combinedMode = false;
+          activeIndex = i;
+          updateView();
+          renderList();
+        });
+        els.list.appendChild(item);
+      });
+    }
+
+    function combinedScript(){
+      const stamp = new Date().toISOString().slice(0,19).replace("T"," ");
+      const sections = filtered.map(t => {
+        return `-- =========================================================
+-- ${t.title.toUpperCase()}  [${t.group}]
+-- =========================================================
+${t.code.trim()}
+`;
+      }).join("\n");
+
+      return `-- SQL COMPILATION (CODE ONLY)
+-- Generated: ${stamp}
+-- Topics included: ${filtered.length}
+-- Notes:
+-- - MySQL-style examples where applicable
+-- - Some topics show DB-specific variants in comments
+-- - Use with your own schema or adapt sample table names
+
+${sections}`.trim();
+    }
+
+    function updateView(){
+      if(combinedMode){
+        els.title.textContent = "Combined SQL Script";
+        els.index.textContent = `${filtered.length} topics • merged`;
+        els.tag.textContent = "ALL";
+        els.code.textContent = combinedScript();
+        return;
+      }
+
+      const t = filtered[activeIndex] || filtered[0];
+      if(!t) return;
+
+      els.title.textContent = t.title;
+      els.index.textContent = `${activeIndex + 1} / ${filtered.length} • ${t.group}`;
+      els.tag.textContent = t.tag;
+      els.code.textContent = t.code.trim();
+    }
+
+    function toast(msg){
+      els.toast.textContent = msg;
+      els.toast.classList.add("show");
+      setTimeout(()=>els.toast.classList.remove("show"), 1100);
+    }
+
+    function download(filename, text){
+      const blob = new Blob([text], {type:"application/sql"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }
+
+    function applySearch(q){
+      const s = q.trim().toLowerCase();
+      if(!s){
+        filtered = [...TOPICS];
+        activeIndex = 0;
+        combinedMode = false;
+        renderList();
+        updateView();
+        return;
+      }
+      filtered = TOPICS.filter(t =>
+        t.title.toLowerCase().includes(s) ||
+        t.group.toLowerCase().includes(s) ||
+        t.tag.toLowerCase().includes(s) ||
+        t.code.toLowerCase().includes(s)
+      );
+      activeIndex = 0;
+      combinedMode = false;
+      renderList();
+      updateView();
+    }
+
+    function jumpToGroup(groupName){
+      const idx = filtered.findIndex(t => t.group === groupName);
+      if(idx >= 0){
+        combinedMode = false;
+        activeIndex = idx;
+        updateView();
+        renderList();
+        const item = els.list.querySelectorAll(".item")[idx];
+        if(item) item.scrollIntoView({block:"center"});
+      }else{
+        toast("Not found in current filter");
+      }
+    }
+
+    function toggleTheme(){
+      const cur = document.documentElement.getAttribute("data-theme") || "light";
+      const next = cur === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("sql_compilation_theme", next);
+      toast(next === "dark" ? "Dark mode" : "Light mode");
+    }
+
+    // -------------------------------
+    // Events
+    // -------------------------------
+    els.search.addEventListener("input", (e) => applySearch(e.target.value));
+
+    els.copy.addEventListener("click", async () => {
+      const text = els.code.textContent;
+      try{
+        await navigator.clipboard.writeText(text);
+        toast("Copied to clipboard");
+      }catch{
+        toast("Copy failed (browser blocked)");
+      }
+    });
+
+    els.download.addEventListener("click", () => {
+      const name = combinedMode ? "sql_compilation_all.sql" : (filtered[activeIndex]?.title || "sql_topic") + ".sql";
+      const safe = name.replace(/[^\w\-\. ]+/g,"").replace(/\s+/g,"_");
+      download(safe, els.code.textContent);
+      toast("Downloaded .sql");
+    });
+
+    els.expandAll.addEventListener("click", () => {
+      combinedMode = !combinedMode;
+      updateView();
+      renderList();
+      toast(combinedMode ? "Combined mode" : "Topic mode");
+    });
+
+    els.jumpDb.addEventListener("click", () => jumpToGroup("SQL Database"));
+
+    els.toggleTheme.addEventListener("click", () => toggleTheme());
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", (e) => {
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      const cmd = isMac ? e.metaKey : e.ctrlKey;
+
+      // Ctrl/Cmd + / focus search
+      if(cmd && e.key === "/"){
+        e.preventDefault();
+        els.search.focus();
+        return;
+      }
+
+      // Ctrl/Cmd + K copy
+      if(cmd && (e.key.toLowerCase() === "k")){
+        e.preventDefault();
+        els.copy.click();
+        return;
+      }
+
+      if(combinedMode) return;
+
+      if(e.key === "ArrowDown"){
+        e.preventDefault();
+        activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
+        updateView();
+        renderList();
+      }
+      if(e.key === "ArrowUp"){
+        e.preventDefault();
+        activeIndex = Math.max(activeIndex - 1, 0);
+        updateView();
+        renderList();
+      }
+    });
+
+    // Restore theme
+    (function initTheme(){
+      const saved = localStorage.getItem("sql_compilation_theme");
+      document.documentElement.setAttribute("data-theme", saved || "light");
+    })();
+
+    // Init
+    renderList();
+    updateView();
+  </script>
+</body>
+</html>
